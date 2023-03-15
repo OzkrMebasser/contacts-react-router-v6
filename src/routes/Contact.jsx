@@ -1,6 +1,6 @@
 import { Form, useLoaderData,useFetcher, } from "react-router-dom";
-
 import { getContact, updateContact } from "../contacts";
+// import DarkMode from "../DarkMode";
 
 export async function action({ request, params }) {
     let formData = await request.formData();
@@ -31,7 +31,11 @@ export default function Contact() {
 //     favorite: true,
 //   };
 
+
+
   return (
+    
+
     <div id="contact">
       <div>
         <img
@@ -86,7 +90,11 @@ export default function Contact() {
           </Form>
         </div>
       </div>
+      
     </div>
+  
+  
+    
   );
 }
 

@@ -1,4 +1,7 @@
-import { Fragment, useEffect, useState} from "react";
+import { Fragment, useEffect, useState, useRef } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSun } from "@fortawesome/free-solid-svg-icons";
+import { faMoon } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Outlet,
@@ -8,17 +11,23 @@ import {
   redirect,
   useNavigation,
   useSubmit,
-
 } from "react-router-dom";
 import { getContacts, createContact } from "../contacts";
 
-export async function loader({ request }) {
-    const url = new URL(request.url);
-    const q = url.searchParams.get("q");
-    const contacts = await getContacts(q);
-    return { contacts, q };
-  }
+import { gsap } from "gsap";
+const animation = gsap.timeline({
+  paused: false,
+  reversed: true,
+  ease: "expo.inOut",
+  duration: 0.0000000001,
+});
 
+export async function loader({ request }) {
+  const url = new URL(request.url);
+  const q = url.searchParams.get("q");
+  const contacts = await getContacts(q);
+  return { contacts, q };
+}
 
 export async function action() {
   const contact = await createContact();
@@ -26,49 +35,62 @@ export async function action() {
   // return { contact };
 }
 
-
-
 export default function Root() {
-    const [theme, setTheme] = useState('light');
-
-    const toggleTheme = () => {
-        if (theme === 'light') {
-        setTheme('dark');
-        } else {
-        setTheme('light');
-        }
+  const [theme, setTheme] = useState("light");
+  const toggleTheme = () => {
+    if (theme === "light") {
+      setTheme("dark");
+    } else {
+      setTheme("light");
     }
-    useEffect(() => {
-        document.body.className = theme;
-        }, [theme]);
-    
+  };
+  useEffect(() => {
+    document.body.className = theme;
+  }, [theme]);
 
-    const { contacts, q } = useLoaderData();
-    const navigation = useNavigation();
+  const wrapperRef = useRef();
+  useEffect(() => {
+    const circle = wrapperRef.current.querySelector(".circle");
+    animation.to(circle, { x: "2rem" })
 
-    useEffect(() => {
-        document.getElementById("q").value = q;
-      }, [q]);
+  });
+  const circleClickHandler = () => {
+    animation.reversed() ? animation.play() : animation.reverse();
+  };
 
-    const submit = useSubmit();
+  const { contacts, q } = useLoaderData();
+  const navigation = useNavigation();
 
-    const searching =
+  useEffect(() => {
+    document.getElementById("q").value = q;
+  }, [q]);
+
+  const submit = useSubmit();
+
+  const searching =
     navigation.location &&
-    new URLSearchParams(navigation.location.search).has(
-      "q"
-    );
-  
+    new URLSearchParams(navigation.location.search).has("q");
 
-
-    
   return (
     <Fragment className={`App ${theme}`}>
-      <div id="sidebar">
-        <h1>React Router Contacts</h1>
-        <button onClick={toggleTheme}>Dark mode Thene</button>
-        <div>
-        <Form id="search-form" role="search">
 
+      <div id="sidebar">
+        <h1 className="intro-header">React Router Contacts</h1>
+        {/* <DarkMode/> */}
+        {/* <button onClick={toggleTheme}>Dark mode Thene</button> */}
+        <div className ref={wrapperRef} onClick={toggleTheme}>
+        <div className="toggle" onClick={circleClickHandler}>
+          <div>
+            <FontAwesomeIcon icon={faSun} className="sun" />
+          </div>
+          <div>
+            <FontAwesomeIcon icon={faMoon} className="moon" />
+          </div>
+          <div className="circle"></div>
+        </div>
+      </div>
+        <div>
+          <Form id="search-form" role="search">
             <input
               id="q"
               className={searching ? "loading" : ""}
@@ -126,10 +148,9 @@ export default function Root() {
         </nav>
       </div>
 
-      <div id="detail"
-      className={
-        navigation.state === "loading" ? "loading" : ""
-      }
+      <div
+        id="detail"
+        className={navigation.state === "loading" ? "loading" : ""}
       >
         <Outlet />
       </div>
